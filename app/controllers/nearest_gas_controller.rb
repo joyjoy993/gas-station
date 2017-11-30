@@ -19,6 +19,13 @@ class NearestGasController < ApplicationController
       return
     end
     addresses = reverse_gps(lat, lng)
+    unless addresses
+      render json: {
+        error: 'latitude and longitude not found',
+        status: 400
+      }, status: 400
+      return
+    end
     nearest_gas_station = fetch_nearest_gas_station(lat, lng)
     render json: {
         addresses: addresses,
