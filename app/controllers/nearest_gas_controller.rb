@@ -18,11 +18,31 @@ class NearestGasController < ApplicationController
       }, status: 400
       return
     end
+    addresses = reverse_gps(lat, lng)
     nearest_gas_station = fetch_nearest_gas_station(lat, lng)
     render json: {
-        address: nearest_gas_station,
-        status: 200
+        addresses: addresses,
+        nearest_gas_station: nearest_gas_station
       }, status: 200
+  end
+
+  # A function to fetch possible addresses by reversing gps
+  def reverse_gps(lat, lng)
+    begin
+      formatted_reverse_gps_query_url = URI.encode(format(REVESE_GPS_QUERY_URL, lat, lng, GOOGLE_MAP_KEY))
+      addresses = []
+      JSON.parse(open(formatted_reverse_gps_query_url).read)['results'].each { |result|
+        address = parse_address_components_from_google_api(result['address_components'])
+        next if address['streetAddress'].nil?
+        addresses.push({
+          'address' => address
+        })
+      }
+      return addresses
+    rescue Exception => e
+      puts e
+      return nil
+    end
   end
 
   def fetch_nearest_gas_station(lat, lng)
