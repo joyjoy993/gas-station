@@ -29,7 +29,9 @@ class NearestGasController < ApplicationController
     begin
       formatted_gas_station_query_url = URI.encode(format(GAS_STATION_QUERY_URL, lat, lng, GOOGLE_MAP_KEY))
       gas_station_address = JSON.parse(open(formatted_gas_station_query_url).read)['results'][0]['vicinity']
-      return gas_station_address
+      formatted_geocoding_query_url = URI.encode(format(GEOCODING_QUERY_URL, gas_station_address, GOOGLE_MAP_KEY))
+      address_components = JSON.parse(open(formatted_geocoding_query_url).read)['results'][0]['address_components']
+      return address_components
     rescue Exception => e
       puts e
       return {}
