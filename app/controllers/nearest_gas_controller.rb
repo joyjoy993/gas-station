@@ -3,7 +3,7 @@ require 'open-uri'
 class NearestGasController < ApplicationController
 
   GOOGLE_MAP_KEY = Rails.application.secrets.google_api_key
-  REVESE_GPS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s'
+  REVERSE_GPS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s'
   GAS_STATION_QUERY_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=%s,%s&type=gas_station&rankby=distance&key=%s'
   GEOCODING_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s'
 
@@ -13,25 +13,22 @@ class NearestGasController < ApplicationController
     lng = permitted[:lng]
     unless lat && lng
       render json: {
-        error: 'params are invalid',
-        status: 400
+        error: 'params are invalid'
       }, status: 400
       return
     end
     addresses = reverse_gps(lat, lng)
     unless addresses
       render json: {
-        error: 'latitude and longitude not found',
-        status: 400
-      }, status: 400
+        error: 'latitude and longitude not found'
+      }, status: 404
       return
     end
     nearest_gas_station = fetch_nearest_gas_station(lat, lng)
     unless nearest_gas_station
       render json: {
-        error: 'gas station nearby not found',
-        status: 400
-      }, status: 400
+        error: 'gas station nearby not found'
+      }, status: 404
       return
     end
     NearestGasStaion.create({
@@ -49,9 +46,10 @@ class NearestGasController < ApplicationController
   # A function to fetch possible addresses by reversing gps
   def reverse_gps(lat, lng)
     begin
-      formatted_reverse_gps_query_url = URI.encode(format(REVESE_GPS_QUERY_URL, lat, lng, GOOGLE_MAP_KEY))
+      formatted_reverse_gps_query_url = URI.encode(format(REVERSE_GPS_QUERY_URL, lat, lng, GOOGLE_MAP_KEY))
       addresses = []
-      JSON.parse(open(formatted_reverse_gps_query_url).read)['results'].each { |result|
+      response_from_reverse_gps_query = open(formatted_reverse_gps_query_url).read
+      JSON.parse(response_from_reverse_gps_query)['results'].each { |result|
         address = parse_address_components_from_google_api(result['address_components'])
         next if address['streetAddress'].nil?
         addresses.push({
@@ -68,9 +66,11 @@ class NearestGasController < ApplicationController
   def fetch_nearest_gas_station(lat, lng)
     begin
       formatted_gas_station_query_url = URI.encode(format(GAS_STATION_QUERY_URL, lat, lng, GOOGLE_MAP_KEY))
-      gas_station_address = JSON.parse(open(formatted_gas_station_query_url).read)['results'][0]['vicinity']
+      response_from_gas_station_query = open(formatted_gas_station_query_url).read
+      gas_station_address = JSON.parse(response_from_gas_station_query)['results'][0]['vicinity']
       formatted_geocoding_query_url = URI.encode(format(GEOCODING_QUERY_URL, gas_station_address, GOOGLE_MAP_KEY))
-      address_components = JSON.parse(open(formatted_geocoding_query_url).read)['results'][0]['address_components']
+      response_from_geocoding_query = open(formatted_geocoding_query_url).read
+      address_components = JSON.parse(response_from_geocoding_query)['results'][0]['address_components']
       return parse_address_components_from_google_api(address_components)
     rescue Exception => e
       puts e
