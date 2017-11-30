@@ -27,6 +27,19 @@ class NearestGasController < ApplicationController
       return
     end
     nearest_gas_station = fetch_nearest_gas_station(lat, lng)
+    unless nearest_gas_station
+      render json: {
+        error: 'gas station nearby not found',
+        status: 400
+      }, status: 400
+      return
+    end
+    NearestGasStaion.create({
+        lat: lat,
+        lng: lng,
+        addresses: addresses,
+        nearest_gas_station: nearest_gas_station
+    })
     render json: {
         addresses: addresses,
         nearest_gas_station: nearest_gas_station
@@ -61,7 +74,7 @@ class NearestGasController < ApplicationController
       return parse_address_components_from_google_api(address_components)
     rescue Exception => e
       puts e
-      return {}
+      return nil
     end
   end
 
