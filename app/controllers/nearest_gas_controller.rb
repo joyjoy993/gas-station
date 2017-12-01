@@ -51,9 +51,9 @@ class NearestGasController < ApplicationController
       response_from_reverse_gps_query = open(formatted_reverse_gps_query_url).read
       JSON.parse(response_from_reverse_gps_query)['results'].each { |result|
         address = parse_address_components_from_google_api(result['address_components'])
-        next if address['streetAddress'].nil?
+        next if address[:streetAddress].nil?
         addresses.push({
-          'address' => address
+          address: address
         })
       }
       return addresses
@@ -116,10 +116,10 @@ class NearestGasController < ApplicationController
         street_address = parsed_address_components['street_number']
       end
       address = {
-        'streetAddress' => street_address,
-        'city' => parsed_address_components['city'],
-        'state' => parsed_address_components['state'],
-        'postalCode' => postal_code
+        streetAddress: street_address,
+        city: parsed_address_components['city'],
+        state: parsed_address_components['state'],
+        postalCode: postal_code
       }
       return address
   end
