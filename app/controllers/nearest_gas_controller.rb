@@ -31,9 +31,9 @@ class NearestGasController < ApplicationController
       }, status: 404
       return
     end
+    gps = Array[lng.to_f, lat.to_f]
     NearestGasStaion.create({
-        lat: lat,
-        lng: lng,
+        gps: gps,
         addresses: addresses,
         nearest_gas_station: nearest_gas_station
     })
