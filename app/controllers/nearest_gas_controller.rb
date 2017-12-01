@@ -58,7 +58,7 @@ class NearestGasController < ApplicationController
       }
       return addresses
     rescue Exception => e
-      puts e
+      puts 'error when fetching response from api: #{e.message}'
       return nil
     end
   end
@@ -73,14 +73,18 @@ class NearestGasController < ApplicationController
       address_components = JSON.parse(response_from_geocoding_query)['results'][0]['address_components']
       return parse_address_components_from_google_api(address_components)
     rescue Exception => e
-      puts e
+      puts 'error when fetching response from api: #{e.message}'
       return nil
     end
   end
 
   # A function to parse address components from google api
   def parse_address_components_from_google_api(address_components)
+    unless address_components
+      return nil
+    end
     parsed_address_components = {}
+    begin
       address_components.each{ |address_component|
         types = address_component['types']
         if types.include? 'street_number'
@@ -122,6 +126,10 @@ class NearestGasController < ApplicationController
         postalCode: postal_code
       }
       return address
+    rescue Exception => e
+      puts 'error when parsing address components from api: #{e.message}'
+      return nil
+    end
   end
 
 end
