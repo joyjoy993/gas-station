@@ -1,6 +1,10 @@
 module LocationConcern
   extend ActiveSupport::Concern
 
+  GOOGLE_MAP_KEY = Rails.application.secrets.google_api_key
+  REVERSE_GPS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s'
+  GAS_STATION_QUERY_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=%s,%s&type=gas_station&rankby=distance&key=%s'
+  GEOCODING_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s'
   GOOGLE_ADDRESS_COMPONENT_MAPPING_KEYS = {
     street_number: {
       original_key: 'long_name',
