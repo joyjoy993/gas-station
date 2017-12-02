@@ -46,10 +46,13 @@ class NearestGasController < ApplicationController
   # A function to fetch possible addresses by reversing gps
   def reverse_gps(lat, lng)
     begin
-      formatted_reverse_gps_query_url = URI.encode(format(REVERSE_GPS_QUERY_URL, lat, lng, GOOGLE_MAP_KEY))
       addresses = []
-      response_from_reverse_gps_query = open(formatted_reverse_gps_query_url).read
-      JSON.parse(response_from_reverse_gps_query)['results'].each { |result|
+      response_from_reverse_gps_query = format_url_and_return_json_response(
+                                          REVERSE_GPS_QUERY_URL,
+                                          lat,
+                                          lng,
+                                          GOOGLE_MAP_KEY)
+      response_from_reverse_gps_query['results'].each { |result|
         address = parse_address_components_from_google_api(result['address_components'])
         # When an address doesn't have streetAddress, it's a general address like a state, a place or a area marker
         next if address[:streetAddress].nil?
@@ -59,19 +62,30 @@ class NearestGasController < ApplicationController
       }
       return addresses
     rescue Exception => e
-      puts 'error when fetching response from api: #{e.message}'
+      puts 'error when fetching response from api: %s' % e.message
       return nil
     end
   end
 
+  def format_url_and_return_json_response(base_url, *params)
+    formatted_url = URI.encode(base_url % params)
+    response = open(formatted_url).read
+    return JSON.parse(response)
+  end
+
   def fetch_nearest_gas_station(lat, lng)
     begin
-      formatted_gas_station_query_url = URI.encode(format(GAS_STATION_QUERY_URL, lat, lng, GOOGLE_MAP_KEY))
-      response_from_gas_station_query = open(formatted_gas_station_query_url).read
-      gas_station_address = JSON.parse(response_from_gas_station_query)['results'][0]['vicinity']
-      formatted_geocoding_query_url = URI.encode(format(GEOCODING_QUERY_URL, gas_station_address, GOOGLE_MAP_KEY))
-      response_from_geocoding_query = open(formatted_geocoding_query_url).read
-      address_components = JSON.parse(response_from_geocoding_query)['results'][0]['address_components']
+      response_from_gas_station_query = format_url_and_return_json_response(
+                                          GAS_STATION_QUERY_URL,
+                                          lat,
+                                          lng,
+                                          GOOGLE_MAP_KEY)
+      gas_station_address = response_from_gas_station_query['results'][0]['vicinity']
+      response_from_geocoding_query = format_url_and_return_json_response(
+                                        GEOCODING_QUERY_URL,
+                                        gas_station_address,
+                                        GOOGLE_MAP_KEY)
+      address_components = response_from_geocoding_query['results'][0]['address_components']
       return parse_address_components_from_google_api(address_components)
     rescue Exception => e
       puts 'error when fetching response from api: #{e.message}'
