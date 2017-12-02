@@ -6,7 +6,7 @@ class Location
   field :nearest_gas_station, type: Hash
   field :query_time, type: DateTime, default: DateTime.now
 
-  validates :gps, presence: true
+  validates :gps, :query_time, :address, :nearest_gas_station, presence: true
 
   index({gps: '2d'}, {min: -180, max: 180})
 
@@ -17,12 +17,31 @@ class Location
   GAS_STATION_QUERY_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=%s,%s&type=gas_station&rankby=distance&key=%s'
   GEOCODING_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s'
 
+  def fetch_location(lat, lng)
+    nearest_gas_station = fetch_nearest_gas_station(lat, lng)
+    address = fetch_address(lat, lng)
+    return {
+      address: address,
+      nearest_gas_station: nearest_gas_station
+    }
+  end
+
   def fetch_cache_gas_station(lat, lng)
     gps = Array[lng.to_f, lat.to_f]
     caching_result = Location.where(:query_time.gte => STALE_TIME)
                       .geo_near(gps).max_distance(CACHING_PRECISION)
     unless caching_result.empty?
       return caching_result.first[:nearest_gas_station]
+    else
+      return nil
+    end
+  end
+
+  def fetch_cache_address(lat, lng)
+    gps = Array[lng.to_f, lat.to_f]
+    caching_result = Location.where(gps: gps)
+    unless caching_result.empty?
+      return caching_result.first[:address]
     else
       return nil
     end
@@ -48,6 +67,10 @@ class Location
   end
 
   def fetch_address(lat, lng)
+    address = fetch_cache_address(lat, lng)
+    if address
+      return address
+    end
     addresses = []
     response_from_reverse_gps_query = format_url_and_return_json_response(
                                         REVERSE_GPS_QUERY_URL,

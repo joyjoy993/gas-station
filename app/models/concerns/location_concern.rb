@@ -27,7 +27,7 @@ module LocationConcern
       mapping_key: 'postal_code_suffix'
     }
   }
-
+  
   def concat_postal_code_or_address_string_helper(parsed_address_components, pattern, first_key, second_key)
     formatted_string = ''
     if parsed_address_components.key?(second_key) && parsed_address_components[second_key] != ''
