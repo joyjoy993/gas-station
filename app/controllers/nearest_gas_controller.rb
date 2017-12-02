@@ -6,6 +6,32 @@ class NearestGasController < ApplicationController
   REVERSE_GPS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s'
   GAS_STATION_QUERY_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=%s,%s&type=gas_station&rankby=distance&key=%s'
   GEOCODING_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s'
+  GOOGLE_ADDRESS_COMPONENT_MAPPING_KEYS = {
+    street_number: {
+      original_key: 'long_name',
+      mapping_key: 'street_number'
+    },
+    route: {
+      original_key: 'long_name',
+      mapping_key: 'route'
+    },
+    locality: {
+      original_key: 'long_name',
+      mapping_key: 'city'
+    },
+    administrative_area_level_1: {
+      original_key: 'short_name',
+      mapping_key: 'state'
+    },
+    postal_code: {
+      original_key: 'long_name',
+      mapping_key: 'postal_code'
+    },
+    postal_code_suffix: {
+      original_key: 'long_name',
+      mapping_key: 'postal_code_suffix'
+    }
+  }
 
   def index
     permitted = params.permit(:lat, :lng)
@@ -93,47 +119,51 @@ class NearestGasController < ApplicationController
     end
   end
 
+  def parse_address_components_helper(types, parsed_address_components, address_component)
+    types.each{ |type|
+      type_symbol = type.to_sym
+      if GOOGLE_ADDRESS_COMPONENT_MAPPING_KEYS.include? type_symbol
+        mapping_key = GOOGLE_ADDRESS_COMPONENT_MAPPING_KEYS[type_symbol][:mapping_key]
+        original_key = GOOGLE_ADDRESS_COMPONENT_MAPPING_KEYS[type_symbol][:original_key]
+        parsed_address_components[mapping_key] = address_component[original_key]
+      end
+    }
+  end
+
+  def concat_postal_code_or_address_string_helper(parsed_address_components, pattern, first_key, second_key)
+    formatted_string = ''
+    if parsed_address_components.key?(second_key) && parsed_address_components[second_key] != ''
+      formatted_string = format(
+                          pattern,
+                          parsed_address_components[first_key],
+                          parsed_address_components[second_key])
+    else
+      formatted_string = parsed_address_components[first_key]
+    end
+    return formatted_string
+  end
+
   # A function to parse address components from google api
   def parse_address_components_from_google_api(address_components)
-    unless address_components
-      return nil
-    end
     parsed_address_components = {}
     begin
       address_components.each{ |address_component|
         types = address_component['types']
-        if types.include? 'street_number'
-          # street_number indicates the precise street number
-          parsed_address_components['street_number'] = address_component['long_name']
-        elsif types.include? 'route'
-          # route indicates named route (such as "US 101")
-          parsed_address_components['route'] = address_component['long_name']
-        elsif types.include? 'locality'
-          # locality indicates an incorporated city or town political entity
-          parsed_address_components['city'] = address_component['long_name']
-        elsif types.include? 'administrative_area_level_1'
-          # administrative_area_level_1 indicates a first-order civil entity below the country level
-          parsed_address_components['state'] = address_component['short_name']
-        elsif types.include? 'postal_code'
-          # postal_code indicates a postal code as used to address postal mail within the country
-          parsed_address_components['postal_code'] = address_component['long_name']
-        elsif types.include? 'postal_code_suffix'
-          # postal_code_suffix indicates a postal code suffix as used to address postal mail within the country
-          parsed_address_components['postal_code_suffix'] = address_component['long_name']
-        end
+        parse_address_components_helper(
+          types,
+          parsed_address_components,
+          address_component)
       }
-      postal_code = ''
-      if parsed_address_components.key?('postal_code_suffix') && parsed_address_components['postal_code_suffix'] != ''
-        postal_code = format('%s-%s', parsed_address_components['postal_code'], parsed_address_components['postal_code_suffix'])
-      else
-        postal_code = parsed_address_components['postal_code']
-      end
-      street_address = ''
-      if parsed_address_components.key?('route') && parsed_address_components['route'] != ''
-        street_address = format('%s %s', parsed_address_components['street_number'], parsed_address_components['route'])
-      else
-        street_address = parsed_address_components['street_number']
-      end
+      postal_code = concat_postal_code_or_address_string_helper(
+                      parsed_address_components,
+                      '%s-%s',
+                      'postal_code',
+                      'postal_code_suffix')
+      street_address = concat_postal_code_or_address_string_helper(
+                        parsed_address_components,
+                        '%s %s',
+                        'street_number',
+                        'route')
       address = {
         streetAddress: street_address,
         city: parsed_address_components['city'],
