@@ -43,8 +43,8 @@ class NearestGasController < ApplicationController
       }, status: 400
       return
     end
-    addresses = reverse_gps(lat, lng)
-    unless addresses
+    address = reverse_gps(lat, lng)
+    unless address
       render json: {
         error: 'latitude and longitude not found'
       }, status: 404
@@ -60,11 +60,11 @@ class NearestGasController < ApplicationController
     gps = Array[lng.to_f, lat.to_f]
     NearestGasStaion.create({
         gps: gps,
-        addresses: addresses,
+        address: address,
         nearest_gas_station: nearest_gas_station
     })
     render json: {
-        addresses: addresses,
+        address: address,
         nearest_gas_station: nearest_gas_station
       }, status: 200
   end
@@ -86,7 +86,7 @@ class NearestGasController < ApplicationController
           address: address
         })
       }
-      return addresses
+      return addresses[0]
     rescue Exception => e
       puts 'error when fetching response from api: %s' % e.message
       return nil
@@ -106,7 +106,7 @@ class NearestGasController < ApplicationController
                                           lat,
                                           lng,
                                           GOOGLE_MAP_KEY)
-      gas_station_address = response_from_gas_station_query['results'][0]['vicinity']
+      gas_station_address = response_from_gas_station_query['results'].first['vicinity']
       response_from_geocoding_query = format_url_and_return_json_response(
                                         GEOCODING_QUERY_URL,
                                         gas_station_address,
