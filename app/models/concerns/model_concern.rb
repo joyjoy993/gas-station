@@ -87,8 +87,23 @@ module ModelConcern
 
   def format_url_and_return_json_response(base_url, *params)
     formatted_url = URI.encode(base_url % params)
-    response = open(formatted_url).read
+    begin
+      response = open(formatted_url).read
+    rescue OpenURI::HTTPError => error
+      error_response = error.io
+      status = error_response[0]
+      message = error_response[1]
+      raise Errors::CustomError.new('Error', status, message)
+    end
     return JSON.parse(response)
+  end
+
+  def fetch_data_from_google(base_url, *params)
+    response = format_url_and_return_json_response(base_url, *params)
+    unless response['status'] == 'OK'
+      raise Errors::GoogleMapApiError.new(response['status'])
+    end
+    response
   end
 
 end

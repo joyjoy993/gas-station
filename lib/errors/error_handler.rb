@@ -2,7 +2,7 @@ module Errors
   module ErrorHandler
     def self.included(clazz)
       clazz.class_eval do
-        rescue_from GoogleMapApiError do |e|
+        rescue_from CustomError do |e|
           respond(e.error, e.status, e.message)
         end
       end

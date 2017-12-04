@@ -68,13 +68,13 @@ class Location
     if gas_station_address
       return gas_station_address
     end
-    response_from_gas_station_query = format_url_and_return_json_response(
+    response_from_gas_station_query = fetch_data_from_google(
                                         GAS_STATION_QUERY_URL,
                                         @lat,
                                         @lng,
                                         GOOGLE_MAP_KEY)
     gas_station_address = response_from_gas_station_query['results'].first['vicinity']
-    response_from_geocoding_query = format_url_and_return_json_response(
+    response_from_geocoding_query = fetch_data_from_google(
                                       GEOCODING_QUERY_URL,
                                       gas_station_address,
                                       GOOGLE_MAP_KEY)
@@ -88,7 +88,7 @@ class Location
       return address
     end
     addresses = []
-    response_from_reverse_gps_query = format_url_and_return_json_response(
+    response_from_reverse_gps_query = fetch_data_from_google(
                                         REVERSE_GPS_QUERY_URL,
                                         @lat,
                                         @lng,
