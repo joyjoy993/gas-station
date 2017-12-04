@@ -1,5 +1,5 @@
 class Location
-  include LocationConcern
+  include ModelConcern
   include Mongoid::Document
   field :gps, type: Array
   field :address, type: Hash

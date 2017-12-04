@@ -1,4 +1,4 @@
-module LocationConcern
+module ModelConcern
   extend ActiveSupport::Concern
 
   GOOGLE_MAP_KEY = Rails.application.secrets.google_api_key
