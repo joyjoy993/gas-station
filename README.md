@@ -2,6 +2,11 @@
 ## A rails API-only project.
 Given a gps, return address and nearest gas station using google map API.
 
+### Before running
+***Create index***
+
+run ```bundle exec rake db:mongoid:create_indexes RAILS_ENV=development```
+
 ### Function
 GET ```http://localhost:3000/nearest_gas?lat=37.778015&lng=-122.412272```
 
