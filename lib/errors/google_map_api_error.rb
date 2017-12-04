@@ -15,19 +15,19 @@ module Errors
             message: 'Request was denied.'
         },
         INVALID_REQUEST: {
-            status: 404,
+            status: 500,
             message: 'The query (address, components or latlng) is missing.'
         },
         UNKNOWN_ERROR: {
-            status: 404,
+            status: 500,
             message: 'The request could not be processed due to a server error. 
                     The request may succeed if you try again.'
         }
     }
-    def initialize(_status)
-        status = GOOGLE_MAP_API_ERROR_STATUS_MAPPING[_status.to_sym][:status]
-        message = GOOGLE_MAP_API_ERROR_STATUS_MAPPING[_status.to_sym][:message]
-      super('Google map api error', status, message)
+    def initialize(error_status)
+        status = GOOGLE_MAP_API_ERROR_STATUS_MAPPING[error_status.to_sym][:status]
+        message = GOOGLE_MAP_API_ERROR_STATUS_MAPPING[error_status.to_sym][:message]
+      super(error_status, status, message)
     end
   end
 end
