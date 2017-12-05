@@ -9,7 +9,7 @@ class NearestGasStation
     @google_map_api_instance = GoogleMapApi.new(google_api_key)
     @lat = lat.to_f
     @lng = lng.to_f
-    @gps = Array[@lng, @lat]
+    @gps = [@lng, @lat]
     @is_gps_cached = false
   end
 
