@@ -2,7 +2,7 @@ module Errors
   class GoogleMapApiError < CustomError
     GOOGLE_MAP_API_ERROR_STATUS_MAPPING = {
       ZERO_RESULTS: {
-        status: 404,
+        status: 500,
         message: 'The geocode was successful but returned no results.
                 This may occur if the geocoder was passed a non-existent address.'
       },
