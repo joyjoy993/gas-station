@@ -10,7 +10,7 @@ module ModelConcern
       error_response = error.io
       status = error_response[0]
       message = error_response[1]
-      raise Errors::CustomError.new('Error', status, message)
+      raise NearestGasErrors::CustomError.new('Error', status, message)
     end
     return JSON.parse(response)
   end

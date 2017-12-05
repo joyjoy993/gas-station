@@ -17,7 +17,7 @@ class NearestGasController < ApplicationController
     @lng = permitted[:lng]
     location = NearestGasValidators::GpsValidator.new(@lat, @lng)
     unless location.valid?
-      raise Errors::CustomError.new('Error', 422, 'Invalid paramters')
+      raise NearestGasErrors::CustomError.new('Error', 422, 'Invalid paramters')
     end
   end
   

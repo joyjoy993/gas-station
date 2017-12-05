@@ -1,4 +1,4 @@
 class ApplicationController < ActionController::API
-    include Errors::ErrorHandler
+    include NearestGasErrors::ErrorHandler
     include ControllerConcern
 end

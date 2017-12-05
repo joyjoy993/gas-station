@@ -1,4 +1,4 @@
-module Errors
+module NearestGasErrors
   class GoogleMapApiError < CustomError
     GOOGLE_MAP_API_ERROR_STATUS_MAPPING = {
       ZERO_RESULTS: {
