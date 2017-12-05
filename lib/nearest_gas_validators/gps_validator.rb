@@ -8,12 +8,12 @@ module NearestGasValidators
     REGEX_LNG = /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/
     
     def initialize(lat, lng)
-      @lat = lat
-      @lng = lng
+      @lat = lat.to_s
+      @lng = lng.to_s
     end
 
     def valid?
-      lat =~ REGEX_LAT && lng =~ REGEX_LNG
+      @lat =~ REGEX_LAT && @lng =~ REGEX_LNG
     end
   end
 end
