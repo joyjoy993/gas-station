@@ -6,9 +6,9 @@ class NearestGasController < ApplicationController
     permitted = params.permit(:lat, :lng)
     lat = permitted[:lat]
     lng = permitted[:lng]
-    location = Location.new
-    location_result = location.fetch_and_create_location(lat, lng)
-    render_json(location_result, 200)
+    nearest_gas_station = NearestGasStation.new(lat, lng)
+    nearest_gas_station_result = nearest_gas_station.get_result()
+    render_json(nearest_gas_station_result, 200)
   end
   
 end
