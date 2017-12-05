@@ -7,6 +7,6 @@ class Location
 
   validates :gps, :query_time, :address, :nearest_gas_station, presence: true
 
-  index({gps: '2d'}, {min: -180, max: 180})
+  index({gps: '2d'}, {min: -180, max: 180, unique: true})
 
 end
