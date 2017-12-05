@@ -1,4 +1,5 @@
 module ModelConcern
+  require 'open-uri'
   extend ActiveSupport::Concern
 
   def format_url_and_return_json_response(base_url, *params)

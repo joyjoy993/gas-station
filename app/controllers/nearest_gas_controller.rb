@@ -1,5 +1,3 @@
-require 'open-uri'
-
 class NearestGasController < ApplicationController
   attr_accessor :lat, :lng
 
