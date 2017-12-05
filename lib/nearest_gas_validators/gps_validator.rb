@@ -1,4 +1,4 @@
-module Validators
+module NearestGasValidators
   class GpsValidator
     attr_accessor :lat, :lng
 
