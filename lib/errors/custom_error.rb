@@ -1,3 +1,5 @@
+# Credit to 'https://medium.com/rails-ember-beyond/error-handling-in-rails-the-modular-way-9afcddd2fe1b'
+
 module Errors
   class CustomError < StandardError
     attr_reader :status, :error, :message
