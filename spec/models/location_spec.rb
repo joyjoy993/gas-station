@@ -1,5 +1,7 @@
 require 'rails_helper'
 require 'database_cleaner'
+require 'support/google_map_api_fake_response'
+include GoogleMapApiFakeResponse
 
 RSpec.describe Location, type: :model do
 
@@ -10,19 +12,11 @@ RSpec.describe Location, type: :model do
 
   before(:each) do
     DatabaseCleaner.clean
-    @location_without_gps = {
-      address: {
-        streetAddress: "1155 Mission Street", 
-        city: "San Francisco", 
-        state: "CA", 
-        postalCode: "94103-1514"
-      },
-      nearest_gas_station: {
-        streetAddress: "1298 Howard Street", 
-        city: "San Francisco", 
-        state: "CA", 
-        postalCode: "94103-2712"
-      }
+    fake_gps = generate_fake_gps_pair
+    @fake_location = {
+      address: get_a_fake_response()[:parsed_address],
+      nearest_gas_station: get_a_fake_response()[:parsed_address],
+      gps: [fake_gps[:lng], fake_gps[:lat]]
     }
   end
 
@@ -36,8 +30,8 @@ RSpec.describe Location, type: :model do
       [-122.41204993, -91], # latitude is less than -90 degree
     ]
     for gps in invalid_gps
-      @location_without_gps['gps'] = gps
-      location = Location.new(@location_without_gps)
+      @fake_location[:gps] = gps
+      location = Location.new(@fake_location)
       location.valid?
       expect( location.errors[:gps] ).to include('Invalid gps pair')
     end
@@ -46,40 +40,24 @@ RSpec.describe Location, type: :model do
   it 'test gps & time uniqueness' do
     gps = [-122.412049, 37.77790]
     query_time = DateTime.now
-    @location_without_gps['gps'] = gps
-    @location_without_gps['query_time'] = query_time
-    location = Location.new(@location_without_gps)
+    @fake_location[:gps] = gps
+    @fake_location[:query_time] = query_time
+    location = Location.new(@fake_location)
     location.save!
-    location = Location.new(@location_without_gps)
+    location = Location.new(@fake_location)
     expect{ location.save! }.to raise_error(Mongo::Error::OperationFailure, /duplicate key error collection/)
   end
 
   it 'test empty address' do
-    location_without_address = {
-      gps: [-122.412043, 37.77790],
-      nearest_gas_station: {
-        streetAddress: "1298 Howard Street", 
-        city: "San Francisco", 
-        state: "CA", 
-        postalCode: "94103-2712"
-      }
-    }
-    location = Location.new(location_without_address)
+    @fake_location.delete(:address)
+    location = Location.new(@fake_location)
     location.valid?
     expect( location.errors[:address] ).to include("can't be blank")
   end
 
   it 'test empty nearest_gas_station' do
-    location_without_nearest_gas_station = {
-      gps: [-122.412043, 37.77790],
-      address: {
-        streetAddress: "1155 Mission Street", 
-        city: "San Francisco", 
-        state: "CA", 
-        postalCode: "94103-1514"
-      }
-    }
-    location = Location.new(location_without_nearest_gas_station)
+    @fake_location.delete(:nearest_gas_station)
+    location = Location.new(@fake_location)
     location.valid?
     expect( location.errors[:nearest_gas_station] ).to include("can't be blank")
   end
