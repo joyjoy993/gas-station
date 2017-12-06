@@ -10,7 +10,7 @@ module ModelConcern
       error_response = error.io
       message = error_response.status[1]
       log_message = format('%s when fetching %s', message, formatted_url)
-      raise NearestGasErrors::CustomError.new(_log_message: log_message)
+      raise NearestGasErrors::CustomError.new(500, 'Internal Server Error', log_message)
     end
     return {
       data: JSON.parse(response),
