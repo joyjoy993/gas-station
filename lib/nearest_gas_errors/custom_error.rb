@@ -2,12 +2,11 @@
 
 module NearestGasErrors
   class CustomError < StandardError
-    attr_reader :status, :error, :message
+    attr_reader :status_code, :message
 
-    def initialize(_error=nil, _status=nil, _message=nil)
-      @error = _error || 'Error'
-      @status = _status || 500
-      @message = _message || 'Something went wrong'
+    def initialize(_status_code=nil, _message=nil)
+      @status_code = _status_code || 500
+      @message = _message || 'Internal Server Error'
     end
     
   end

@@ -5,17 +5,17 @@ module NearestGasErrors
     def self.included(clazz)
       clazz.class_eval do
         rescue_from CustomError do |e|
-          respond(e.error, e.status, e.message)
+          respond(e.status_code, e.message)
         end
       end
     end
 
     private
-    def respond(error, status, message)
+    def respond(status_code, message)
       render_json({
-          error: error,
+          status_code: status_code,
           message: message
-        }, status)
+        }, status_code)
     end
   end
 end

@@ -88,9 +88,11 @@ class GoogleMapApi
 
   def fetch_data_from_google(base_url, *params)
     response = format_url_and_return_json_response(base_url, *params)
-    unless response['status'] == 'OK'
-      raise NearestGasErrors::GoogleMapApiError.new(response['status'])
+    data = response[:data]
+    url = response[:url]
+    unless data['status'] == 'OK'
+      raise NearestGasErrors::GoogleMapApiError.new(data['status'], url)
     end
-    response
+    data
   end
 end
