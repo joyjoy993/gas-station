@@ -6,6 +6,7 @@ module NearestGasErrors
       clazz.class_eval do
         rescue_from CustomError do |e|
           respond(e.status_code, e.message)
+          log_error(e.log_message)
         end
       end
     end
@@ -16,6 +17,10 @@ module NearestGasErrors
           status_code: status_code,
           message: message
         }, status_code)
+    end
+
+    def log_error(log_message)
+      Rails.logger.error log_message
     end
   end
 end

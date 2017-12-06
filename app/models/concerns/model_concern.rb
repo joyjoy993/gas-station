@@ -8,9 +8,9 @@ module ModelConcern
       response = open(formatted_url).read
     rescue OpenURI::HTTPError => error
       error_response = error.io
-      status = error_response.status[0]
       message = error_response.status[1]
-      raise NearestGasErrors::CustomError.new
+      log_message = format('%s when fetching %s', message, formatted_url)
+      raise NearestGasErrors::CustomError.new(_log_message: log_message)
     end
     return {
       data: JSON.parse(response),

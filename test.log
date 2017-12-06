@@ -1,0 +1,41 @@
+# Logfile created on 2017-12-06 01:10:33 -0500 by logger.rb/54362
+I, [2017-12-06T01:10:36.906932 #67280]  INFO -- : Started GET "/nearest_gas?lat=40.751934&lng=-73.9917" for 127.0.0.1 at 2017-12-06 01:10:36 -0500
+I, [2017-12-06T01:10:36.941739 #67280]  INFO -- : Processing by NearestGasController#show as HTML
+I, [2017-12-06T01:10:36.941904 #67280]  INFO -- :   Parameters: {"lat"=>"40.751934", "lng"=>"-73.9917"}
+D, [2017-12-06T01:10:36.978671 #67280] DEBUG -- : MONGODB | Topology type 'unknown' initializing.
+D, [2017-12-06T01:10:36.978897 #67280] DEBUG -- : MONGODB | Server localhost:27017 initializing.
+D, [2017-12-06T01:10:36.981247 #67280] DEBUG -- : MONGODB | Topology type 'unknown' changed to type 'single'.
+D, [2017-12-06T01:10:36.981455 #67280] DEBUG -- : MONGODB | Server description for localhost:27017 changed from 'unknown' to 'standalone'.
+D, [2017-12-06T01:10:36.981618 #67280] DEBUG -- : MONGODB | There was a change in the members of the 'single' topology.
+D, [2017-12-06T01:10:36.982594 #67280] DEBUG -- : MONGODB | localhost:27017 | location_development.find | STARTED | {"find"=>"locations", "filter"=>{"gps"=>[-73.9917, 40.751934], "query_time"=>{"$gte"=>2017-12-03 06:10:36 UTC}}, "projection"=>{"_id"=>1}, "limit"=>1}
+D, [2017-12-06T01:10:36.983766 #67280] DEBUG -- : MONGODB | localhost:27017 | location_development.find | SUCCEEDED | 0.000991s
+I, [2017-12-06T01:10:37.509606 #67280]  INFO -- : Completed 500 Internal Server Error in 567ms
+
+
+F, [2017-12-06T01:10:37.510259 #67280] FATAL -- :   
+F, [2017-12-06T01:10:37.510442 #67280] FATAL -- : NameError (undefined local variable or method `logger' for #<NearestGasErrors::GoogleMapApiError:0x007fac1c4bf800>):
+F, [2017-12-06T01:10:37.510543 #67280] FATAL -- :   
+F, [2017-12-06T01:10:37.510630 #67280] FATAL -- : lib/nearest_gas_errors/google_map_api_error.rb:16:in `initialize'
+app/models/google_map_api.rb:94:in `new'
+app/models/google_map_api.rb:94:in `fetch_data_from_google'
+app/models/google_map_api.rb:39:in `reverse_gps'
+app/models/nearest_gas_station.rb:51:in `fetch_address'
+app/models/nearest_gas_station.rb:17:in `get_result'
+app/controllers/nearest_gas_controller.rb:8:in `show'
+I, [2017-12-06T01:10:37.568484 #67280]  INFO -- :   Rendering /usr/local/lib/ruby/gems/2.3.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/templates/rescues/diagnostics.html.erb within rescues/layout
+I, [2017-12-06T01:10:37.590474 #67280]  INFO -- :   Rendering /usr/local/lib/ruby/gems/2.3.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/templates/rescues/_source.html.erb
+I, [2017-12-06T01:10:37.592863 #67280]  INFO -- :   Rendered /usr/local/lib/ruby/gems/2.3.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/templates/rescues/_source.html.erb (2.2ms)
+I, [2017-12-06T01:10:37.612438 #67280]  INFO -- :   Rendering /usr/local/lib/ruby/gems/2.3.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/templates/rescues/_trace.html.erb
+I, [2017-12-06T01:10:37.614006 #67280]  INFO -- :   Rendered /usr/local/lib/ruby/gems/2.3.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/templates/rescues/_trace.html.erb (1.4ms)
+I, [2017-12-06T01:10:37.633330 #67280]  INFO -- :   Rendering /usr/local/lib/ruby/gems/2.3.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/templates/rescues/_request_and_response.html.erb
+I, [2017-12-06T01:10:37.634364 #67280]  INFO -- :   Rendered /usr/local/lib/ruby/gems/2.3.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/templates/rescues/_request_and_response.html.erb (0.9ms)
+I, [2017-12-06T01:10:37.634457 #67280]  INFO -- :   Rendered /usr/local/lib/ruby/gems/2.3.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/templates/rescues/diagnostics.html.erb within rescues/layout (65.9ms)
+I, [2017-12-06T01:11:24.763489 #67280]  INFO -- : Started GET "/nearest_gas?lat=40.751934&lng=-73.9917" for 127.0.0.1 at 2017-12-06 01:11:24 -0500
+I, [2017-12-06T01:11:24.793029 #67280]  INFO -- : Processing by NearestGasController#show as HTML
+I, [2017-12-06T01:11:24.793188 #67280]  INFO -- :   Parameters: {"lat"=>"40.751934", "lng"=>"-73.9917"}
+D, [2017-12-06T01:11:24.810101 #67280] DEBUG -- : MONGODB | localhost:27017 | location_development.find | STARTED | {"find"=>"locations", "filter"=>{"gps"=>[-73.9917, 40.751934], "query_time"=>{"$gte"=>2017-12-03 06:11:24 UTC}}, "projection"=>{"_id"=>1}, "limit"=>1}
+D, [2017-12-06T01:11:24.810801 #67280] DEBUG -- : MONGODB | localhost:27017 | location_development.find | SUCCEEDED | 0.000486s
+E, [2017-12-06T01:11:25.087169 #67280] ERROR -- : When fetching https://maps.googleapis.com/maps/api/geocode/json?latlng=40.751934,-73.9917&key=AIzaSyAIU_2CxK-fAGA7WLz6AR_6IDBfshuDzvE, come across OK error, which means 
+I, [2017-12-06T01:11:25.087893 #67280]  INFO -- : Completed 503 Service Unavailable in 295ms (Views: 0.4ms)
+
+

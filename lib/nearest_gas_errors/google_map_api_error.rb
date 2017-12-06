@@ -9,10 +9,12 @@ module NearestGasErrors
       UNKNOWN_ERROR: 'The request could not be processed due to a server error. 
                 The request may succeed if you try again.'
     }
+    LOGGING_MESSAGE = 'When fetching %s, come across %s error, which means %s'
     def initialize(error_status, url)
       message = GOOGLE_MAP_API_ERROR_STATUS_MAPPING[error_status.to_sym]
       # do logging here, "[message] when fetching [url]"
-      super(503, 'Service Unavailable')
+      log_message = format(LOGGING_MESSAGE, url, error_status, message)
+      super(503, 'Service Unavailable', log_message)
     end
   end
 end
