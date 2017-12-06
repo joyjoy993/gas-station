@@ -1,5 +1,4 @@
 class NearestGasController < ApplicationController
-  attr_accessor :lat, :lng
 
   before_action :validate_params
 
