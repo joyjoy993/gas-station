@@ -8,7 +8,11 @@ class Location
   validates :gps, :query_time, :address, :nearest_gas_station, presence: true
   validate :gps_valid?
 
-  index({gps: '2d'}, {min: -180, max: 180, unique: true})
+  # index gps and query_time with 'unique' option
+  # pros:
+  # 1. can ensure cached query is uniqueness
+  # 2. can log query(won't delete stale query)
+  index({gps: '2d', query_time: 1}, {min: -180, max: 180, unique: true})
 
   private
 
