@@ -7,11 +7,13 @@ RSpec.describe GoogleMapApi, type: :model do
   before(:all) do
     google_api_key = Rails.application.secrets.google_api_key
     @google_map_api_instance = GoogleMapApi.new(google_api_key)
+    fake_gps = generate_fake_gps_pair
+    @gps = [fake_gps[:lng], fake_gps[:lat]]
   end
 
   it 'Google server is down' do
     stub_request(:any, /https:\/\/maps.googleapis.com\/*/).to_return(status: [500, 'Internal Server Error'])
-    expect{ @google_map_api_instance.reverse_gps(37.7779056, -122.4120423) }.to raise_error(NearestGasErrors::CustomError)
+    expect{ @google_map_api_instance.reverse_gps(@gps[0], @gps[1]) }.to raise_error(NearestGasErrors::CustomError)
   end
 
   it 'Google returns result with status that is not OK' do
@@ -19,7 +21,7 @@ RSpec.describe GoogleMapApi, type: :model do
     for status in error_status
       stub_request(:any, /https:\/\/maps.googleapis.com\/*/)
         .to_return(status: 200,  body: { status: status }.to_json)
-      expect{ @google_map_api_instance.reverse_gps(37.7779056, -122.4120423) }.to raise_error(NearestGasErrors::GoogleMapApiError)
+      expect{ @google_map_api_instance.reverse_gps(@gps[0], @gps[1]) }.to raise_error(NearestGasErrors::GoogleMapApiError)
     end
   end
 
