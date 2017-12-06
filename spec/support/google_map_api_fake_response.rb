@@ -75,8 +75,8 @@ module GoogleMapApiFakeResponse
 
   def fake_gps_pair
     {
-      lat: Faker::Address.latitude,
-      lng: Faker::Address.longitude
+      lat: Faker::Address.latitude.to_f.round(6),
+      lng: Faker::Address.longitude.to_f.round(6)
     }
   end
 
