@@ -1,6 +1,6 @@
-
 module GoogleMapApiFakeResponse
-  def get_google_response(fake_address)
+  def fake_geocoding_response(fake_address)
+    # only contain address_components
     {
       results: [{
         address_components: [{
@@ -37,6 +37,20 @@ module GoogleMapApiFakeResponse
     }
   end
 
+  def fake_nearby_response()
+    # only conatin vicnity
+    # vicnity contains a feature name of a nearby location. 
+    # Often this feature refers to a street or neighborhood within the given results.
+    # The vicinity property is only returned for a Nearby Search.
+    {
+      results: Array.new(5) {
+        {
+          vicnity: Faker::Address.street_address
+        }
+      }
+    }
+  end
+
   def get_parsed_address(fake_address)
     {
       streetAddress: format("%s %s", fake_address[:street_number], fake_address[:street_name]),
@@ -46,7 +60,7 @@ module GoogleMapApiFakeResponse
     }
   end
 
-  def generate_parameters
+  def fake_address_parameters
     {
       street_number: Faker::Address.building_number,
       street_name: Faker::Address.street_name,
@@ -59,23 +73,33 @@ module GoogleMapApiFakeResponse
     }
   end
 
-  def generate_fake_gps_pair
+  def fake_gps_pair
     {
       lat: Faker::Address.latitude,
       lng: Faker::Address.longitude
     }
   end
 
-  def get_a_fake_response
-    parameters = generate_parameters
+  def get_fake_geocoding_response_and_parsed_address
+    address_components = fake_address_parameters
     {
-      google_response: get_google_response(parameters),
-      parsed_address: get_parsed_address(parameters)
+      geocoding_response: fake_geocoding_response(address_components),
+      parsed_address: get_parsed_address(address_components)
     }
   end
 
-  def get_some_fake_response(count)
-    Array.new(count) {get_a_fake_response}
+  # contain reverse, geocoding and nearby result from google api
+  def fake_a_response
+    {
+      fake_gps: fake_gps_pair,
+      address: get_fake_geocoding_response_and_parsed_address,
+      nearest_gas_station: get_fake_geocoding_response_and_parsed_address,
+      nearest_gas_station_response: fake_nearby_response,
+    }
+  end
+
+  def fake_some_responses(count)
+    Array.new(count) {fake_a_response}
   end
 
 end

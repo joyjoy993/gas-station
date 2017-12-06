@@ -7,7 +7,8 @@ RSpec.describe GoogleMapApi, type: :model do
   before(:all) do
     google_api_key = Rails.application.secrets.google_api_key
     @google_map_api_instance = GoogleMapApi.new(google_api_key)
-    fake_gps = generate_fake_gps_pair
+    fake_response = fake_a_response
+    fake_gps = fake_response[:fake_gps]
     @gps = [fake_gps[:lng], fake_gps[:lat]]
   end
 
@@ -26,10 +27,10 @@ RSpec.describe GoogleMapApi, type: :model do
   end
 
   it 'Parse components in result and return json of address' do
-    fake_responses = get_some_fake_response(10)
+    fake_responses = fake_some_responses(10)
     for fake_response in fake_responses
-      fake_google_response = fake_response[:google_response].with_indifferent_access
-      parsed_address = fake_response[:parsed_address]
+      fake_google_response = fake_response[:address][:geocoding_response].with_indifferent_access
+      parsed_address = fake_response[:address][:parsed_address]
       expect( @google_map_api_instance.parse_address_result(fake_google_response['results'][0]) ).to eq(parsed_address)
     end
   end

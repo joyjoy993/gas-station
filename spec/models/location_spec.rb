@@ -12,10 +12,11 @@ RSpec.describe Location, type: :model do
 
   before(:each) do
     DatabaseCleaner.clean
-    fake_gps = generate_fake_gps_pair
+    fake_response = fake_a_response
+    fake_gps = fake_response[:fake_gps]
     @fake_location = {
-      address: get_a_fake_response()[:parsed_address],
-      nearest_gas_station: get_a_fake_response()[:parsed_address],
+      address: fake_response[:address][:parsed_address],
+      nearest_gas_station: fake_response[:nearest_gas_station][:parsed_address],
       gps: [fake_gps[:lng], fake_gps[:lat]]
     }
   end
