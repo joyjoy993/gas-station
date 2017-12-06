@@ -47,7 +47,8 @@ module GoogleMapApiFakeResponse
         {
           vicnity: Faker::Address.street_address
         }
-      }
+      },
+      status: "OK"
     }
   end
 
