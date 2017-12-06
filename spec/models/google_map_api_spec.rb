@@ -24,9 +24,11 @@ RSpec.describe GoogleMapApi, type: :model do
   end
 
   it 'Parse components in result and return json of address' do
-    fake_response = get_a_fake_response
-    fake_google_response = fake_response[:google_response].with_indifferent_access
-    parsed_component = fake_response[:parsed_component]
-    expect( @google_map_api_instance.parse_address_result(fake_google_response['results'][0]) ).to eq(parsed_component)
+    fake_responses = get_some_fake_response(10)
+    for fake_response in fake_responses
+      fake_google_response = fake_response[:google_response].with_indifferent_access
+      parsed_component = fake_response[:parsed_component]
+      expect( @google_map_api_instance.parse_address_result(fake_google_response['results'][0]) ).to eq(parsed_component)
+    end
   end
 end
