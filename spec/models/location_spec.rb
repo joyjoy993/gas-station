@@ -43,9 +43,11 @@ RSpec.describe Location, type: :model do
     end
   end
 
-  it 'test gps uniqueness' do
+  it 'test gps & time uniqueness' do
     gps = [-122.412049, 37.77790]
+    query_time = DateTime.now
     @location_without_gps['gps'] = gps
+    @location_without_gps['query_time'] = query_time
     location = Location.new(@location_without_gps)
     location.save!
     location = Location.new(@location_without_gps)
