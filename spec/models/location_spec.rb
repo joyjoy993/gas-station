@@ -4,12 +4,12 @@ require 'database_cleaner'
 RSpec.describe Location, type: :model do
 
   before(:all) do
-    DatabaseCleaner.strategy = :truncation
-    DatabaseCleaner.clean
     Location.create_indexes
+    DatabaseCleaner.strategy = :truncation
   end
 
   before(:each) do
+    DatabaseCleaner.clean
     @location_without_gps = {
       address: {
         streetAddress: "1155 Mission Street", 
