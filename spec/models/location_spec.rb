@@ -70,10 +70,9 @@ RSpec.describe Location, type: :model do
   it 'normal data insertion' do
     10.times do
       fake_location = get_fake_location
-      count_of_documents = Location.count
       location = Location.new(fake_location)
       location.save!
-      expect(Location.count).to eq(count_of_documents+1)
+      expect(Location.where(gps: fake_location[:gps]).count).to eq(1)
     end
   end
 
