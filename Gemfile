@@ -34,6 +34,7 @@ group :test do
   gem 'webmock'
   gem 'faker'
   gem 'database_cleaner'
+  gem 'rails-controller-testing'
 end
 
 group :development do
