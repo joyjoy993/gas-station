@@ -1,7 +1,9 @@
 require 'rails_helper'
 require 'database_cleaner'
 require 'factories/google_map_api_fake_response'
+require 'helpers/stub_request_helper'
 include GoogleMapApiFakeResponse
+include StubRequestHelper
 
 RSpec.describe NearestGasController, type: :controller do
 
@@ -12,25 +14,6 @@ RSpec.describe NearestGasController, type: :controller do
 
   before(:each) do
     DatabaseCleaner.clean
-  end
-
-  def stub_normal_request(fake_response)
-    # geocoding query, used in reversing gps
-    stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?(.*)latlng=(.*)/).to_return(
-      status: 200,
-      body: fake_response[:address][:geocoding_response].to_json)
-    # near by gas station query
-    stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/place\/nearbysearch\/json?(.*)location=(.*)/).to_return(
-      status: 200,
-      body: fake_response[:nearest_gas_station_response].to_json)
-    # geocoding query, used in formatting address
-    stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?(.*)address=(.*)/).to_return(
-      status: 200,
-      body: fake_response[:address][:geocoding_response].to_json)
-  end
-
-  def stub_error_request
-    stub_request(:any, /https:\/\/maps.googleapis.com\/*/).to_return(status: [500, 'Internal Server Error'])
   end
 
   it 'Invalid lat and lng pairs' do
@@ -83,7 +66,7 @@ RSpec.describe NearestGasController, type: :controller do
   end
 
   it 'Google server is down' do
-    stub_error_request
+    stub_error_request(:all)
     fake_gps = fake_gps_pair
     get :show, params: fake_gps
     expect(response).to have_http_status(500)

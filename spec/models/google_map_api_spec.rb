@@ -1,6 +1,8 @@
 require 'rails_helper'
 require 'factories/google_map_api_fake_response'
+require 'helpers/stub_request_helper'
 include GoogleMapApiFakeResponse
+include StubRequestHelper
 
 RSpec.describe GoogleMapApi, type: :model do
 
@@ -13,7 +15,7 @@ RSpec.describe GoogleMapApi, type: :model do
   end
 
   it 'Google server is down' do
-    stub_request(:any, /https:\/\/maps.googleapis.com\/*/).to_return(status: [500, 'Internal Server Error'])
+    stub_error_request(:all)
     expect{ @google_map_api_instance.reverse_gps(@gps[0], @gps[1]) }.to raise_error(NearestGasErrors::CustomError)
   end
 
