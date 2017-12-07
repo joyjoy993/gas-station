@@ -5,6 +5,16 @@ include GoogleMapApiFakeResponse
 
 RSpec.describe Location, type: :model do
 
+  def get_fake_location
+    fake_response = fake_a_response
+    fake_gps = fake_response[:fake_gps]
+    {
+      address: fake_response[:address][:parsed_address],
+      nearest_gas_station: fake_response[:nearest_gas_station][:parsed_address],
+      gps: [fake_gps[:lng], fake_gps[:lat]]
+    }
+  end
+
   before(:all) do
     Location.create_indexes
     DatabaseCleaner.strategy = :truncation
@@ -12,16 +22,10 @@ RSpec.describe Location, type: :model do
 
   before(:each) do
     DatabaseCleaner.clean
-    fake_response = fake_a_response
-    fake_gps = fake_response[:fake_gps]
-    @fake_location = {
-      address: fake_response[:address][:parsed_address],
-      nearest_gas_station: fake_response[:nearest_gas_station][:parsed_address],
-      gps: [fake_gps[:lng], fake_gps[:lat]]
-    }
+    @fake_location = get_fake_location
   end
 
-  it 'test gps validation' do
+  it 'gps validation' do
     invalid_gps = [
       [-122.41204993, 37.77790], # longitude is over 6 decimal digits
       [-122.412049, 37.73779088], # latitude is over 6 decimal digits
@@ -38,7 +42,7 @@ RSpec.describe Location, type: :model do
     end
   end
 
-  it 'test gps & time uniqueness' do
+  it 'gps & time uniqueness' do
     gps = [-122.412049, 37.77790]
     query_time = DateTime.now
     @fake_location[:gps] = gps
@@ -49,18 +53,28 @@ RSpec.describe Location, type: :model do
     expect{ location.save! }.to raise_error(Mongo::Error::OperationFailure, /duplicate key error collection/)
   end
 
-  it 'test empty address' do
+  it 'empty address' do
     @fake_location.delete(:address)
     location = Location.new(@fake_location)
     location.valid?
     expect( location.errors[:address] ).to include("can't be blank")
   end
 
-  it 'test empty nearest_gas_station' do
+  it 'empty nearest_gas_station' do
     @fake_location.delete(:nearest_gas_station)
     location = Location.new(@fake_location)
     location.valid?
     expect( location.errors[:nearest_gas_station] ).to include("can't be blank")
+  end
+
+  it 'normal data insertion' do
+    10.times do
+      fake_location = get_fake_location
+      count_of_documents = Location.count
+      location = Location.new(fake_location)
+      location.save!
+      expect(Location.count).to eq(count_of_documents+1)
+    end
   end
 
 end
