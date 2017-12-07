@@ -1,6 +1,6 @@
 require 'rails_helper'
 require 'database_cleaner'
-require 'support/google_map_api_fake_response'
+require 'factories/google_map_api_fake_response'
 include GoogleMapApiFakeResponse
 
 RSpec.describe Location, type: :model do

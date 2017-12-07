@@ -32,7 +32,6 @@ end
 group :test do
   gem 'rspec-rails', '~> 3.6'
   gem 'webmock'
-  gem 'factory_bot_rails'
   gem 'faker'
   gem 'database_cleaner'
 end
