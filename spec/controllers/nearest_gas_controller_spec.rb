@@ -14,6 +14,25 @@ RSpec.describe NearestGasController, type: :controller do
     DatabaseCleaner.clean
   end
 
+  def stub_normal_request(fake_response)
+    # geocoding query, used in reversing gps
+    stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?(.*)latlng=(.*)/).to_return(
+      status: 200,
+      body: fake_response[:address][:geocoding_response].to_json)
+    # near by gas station query
+    stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/place\/nearbysearch\/json?(.*)location=(.*)/).to_return(
+      status: 200,
+      body: fake_response[:nearest_gas_station_response].to_json)
+    # geocoding query, used in formatting address
+    stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?(.*)address=(.*)/).to_return(
+      status: 200,
+      body: fake_response[:address][:geocoding_response].to_json)
+  end
+
+  def stub_error_request
+    stub_request(:any, /https:\/\/maps.googleapis.com\/*/).to_return(status: [500, 'Internal Server Error'])
+  end
+
   it 'Invalid lat and lng pairs' do
     invalid_gps = [
       [-122.41204993, 37.77790], # longitude is over 6 decimal digits
@@ -64,8 +83,8 @@ RSpec.describe NearestGasController, type: :controller do
   end
 
   it 'Google server is down' do
+    stub_error_request
     fake_gps = fake_gps_pair
-    stub_request(:any, /https:\/\/maps.googleapis.com\/*/).to_return(status: [500, 'Internal Server Error'])
     get :show, params: fake_gps
     expect(response).to have_http_status(500)
   end
@@ -73,18 +92,7 @@ RSpec.describe NearestGasController, type: :controller do
   it 'Normal requestes' do
     fake_responses = fake_some_responses(10)
     for fake_response in fake_responses
-      # geocoding query, used in reversing gps
-      stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?(.*)latlng=(.*)/).to_return(
-        status: 200,
-        body: fake_response[:address][:geocoding_response].to_json)
-      # near by gas station query
-      stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/place\/nearbysearch\/json?(.*)location=(.*)/).to_return(
-        status: 200,
-        body: fake_response[:nearest_gas_station_response].to_json)
-      # geocoding query, used in formatting address
-      stub_request(:any, /https:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?(.*)address=(.*)/).to_return(
-        status: 200,
-        body: fake_response[:address][:geocoding_response].to_json)
+      stub_normal_request(fake_response)
       expected_response = {
         address: fake_response[:address][:parsed_address],
         # here I use address to fake gas station address, because they share the same parsing logic
