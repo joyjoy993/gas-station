@@ -1,39 +1,26 @@
-# README
-## A rails API-only project.
-Given a gps, return address and nearest gas station using google map API.
+# A rails API-only project.
 
-### Before running
-***Create index***
 
-run ```bundle exec rake db:mongoid:create_indexes RAILS_ENV=development```
+## Before running
 
-### Function
+create index by running  
+```bundle exec rake db:mongoid:create_indexes RAILS_ENV=development```
+
+## Goal
+Given a gps, return address and nearest gas station using google map API.  
+
 GET ```http://localhost:3000/nearest_gas?lat=37.778015&lng=-122.412272```
 
 Response
 ```
 {
-    "addresses": [{
-        "address": {
-            "streetAddress": "1161 Mission Street",
-            "city": "San Francisco",
-            "state": "CA",
-            "postalCode": "94103"
-        }}, {
-        "address": {
-            "streetAddress": "1-49 Julia Street",
-            "city": "San Francisco",
-            "state": "CA",
-            "postalCode": "94103"
-        }}, {
-        "address": {
-            "streetAddress": "1188 Mission Street",
-            "city": "San Francisco",
-            "state": "CA",
-            "postalCode": "94103"
-        }}
-    ],
-    nearest_gas_station: {
+    "address": {
+        "streetAddress": "1155 Mission Street",
+        "city": "San Francisco",
+        "state": "CA",
+        "postalCode": "94103-1514"
+    },
+    "nearest_gas_station": {
         "streetAddress": "1298 Howard Street",
         "city": "San Francisco",
         "state": "CA",
@@ -42,106 +29,77 @@ Response
 }
 ```
 
-Insert query log into local mongoDB
+Save query result into local mongoDB and can use this result as caching
 ```
 { 
-    "_id" : ObjectId("5a0b63ceebf6ffdac423a2c4"), 
-    "lat" : "37.778015", 
-    "lng" : "-122.412272", 
-    "addresses" : [
-        {
-            "address" : {
-                "streetAddress" : "1161 Mission Street", 
-                "city" : "San Francisco", 
-                "state" : "CA", 
-                "postalCode" : "94103"
-            }
-        }, 
-        {
-            "address" : {
-                "streetAddress" : "1-49 Julia Street", 
-                "city" : "San Francisco", 
-                "state" : "CA", 
-                "postalCode" : "94103"
-            }
-        }, 
-        {
-            "address" : {
-                "streetAddress" : "1188 Mission Street", 
-                "city" : "San Francisco", 
-                "state" : "CA", 
-                "postalCode" : "94103"
-            }
-        }
-    ], 
+    "_id" : ObjectId("5a29a4d5ebf6ff1f52a6103a"), 
+    "query_time" : ISODate("2017-12-04T20:30:12.200+0000"), 
+    "address" : {
+        "streetAddress" : "5536 Klein Ports", 
+        "city" : "West Stephon", 
+        "state" : "NH", 
+        "postalCode" : "77958-2976"
+    }, 
     "nearest_gas_station" : {
-        "streetAddress" : "1298 Howard Street", 
-        "city" : "San Francisco", 
-        "state" : "CA", 
-        "postalCode" : "94103-2712"
-    }
+        "streetAddress" : "199 Wyatt Unions", 
+        "city" : "South Marcoton", 
+        "state" : "UT", 
+        "postalCode" : "39118-8675"
+    }, 
+    "gps" : [
+        -52.262158, 
+        -84.992272
+    ]
 }
 ```
 
-### Testing
-Run ```rails test test/controllers/nearest_gas_controller_test.rb```
+## About cache
+***Note: All caches are only valid before they become stale, assuming all cases below happend before their cached data are stale.**  
+### Cases that will hit the cache
+1. querying a gps that was queried before, should return cached data.
+2. querying a gps A that its nearby gps B was queried before, should return cached gas station address from B and fetch new address data from google api, and also save a document for A.
 
-Fail on the second case because of the second problem below.
+## Testing detail
+Run all testes by ```rspec spec/```
 
-### Problem
-**1. reversing gps**
+### Controller testing cases
+##### NearestGasController
+1. invalid lat and lng as parameters, should return error ```422```.
+2. invalid parameters(missing lat or lng, extrat params), should return error ```422```.
+3. when google service is unavailable, and we can not fetch data from it, should return error ```500```.
+4. normal request should return expected result.
 
-For the sample gps [37.77801, -122.4119], I sent a query to google map API
+### Model testing cases
+##### Location
+1. validate ```lat``` and ```lng```, if it doesn't pass validation, should include ```Invalid gps pair``` in errors.
+2. two pairs of location documents with the same ```gps``` and ```query_time``` can not be saved into database.
+3. ```address``` field can not be blank.
+4. ```nearest_gas_station``` field can not be blank.
 
-```https://maps.googleapis.com/maps/api/geocode/json?latlng=37.77801,-122.4119076&key=AIzaSyAIU_2CxK-fAGA7WLz6AR_6IDBfshuDzvE```
+##### GoogleMapApi
+1. should raise ```NearestGasErrors::CustomError``` when google service is unavailable.
+2. should raise ```NearestGasErrors::GoogleMapApiError``` when google api returns response without ```OK``` status.
+3. should correctly parse address components from google api.
 
-But it returns more than one result where none of them is '1161 Mission St, San Francisco, CA 94103'.
+##### NearestGasStation
+1. normal query should all be saved into database.
+2. if query the same gps more than once within stale time, should return cached data and won't create new document in database.
+3. if query nearby gps and cached gas_station_address is found, should use the cached gas_station_address and should not hit the google nearby api.
+4. if the cached data is stale, should fetch new data from google api and save them into database.
 
-A note from google map API, '***Reverse geocoding is an estimate. The geocoder will attempt to find the closest addressable location within a certain tolerance. If no match is found, the geocoder will return zero results***'. Therefore, reversing a gps will only return some possible addresses. One address is matched to one gps, but one gps is matched to many possible addressed.
+## Improvement progress
+- [x] Thin controller, fat model
+    1. move logic from controller to model
+- [x] DRY
+    1. refactor methods and extract helper methods
+    2. extracting values from a hash, use some function like map not a case statment
+- [x] Error handling
+    1. use custom modules to handle error, please check [nearest_gas_errors](/lib/nearest_gas_errors/) folder
+- [x] Validation
+    1. validate parameters in url, please check [nearest_gas_validators](/lib/nearest_gas_validators/) folder
+    2. validate fields before saving data to database
+- [x] Testing
+    1. Try to cover as many cases as I can, please check [spec](/spec/) folder
+- [ ] Documentation
 
-And also, I figure out how to get the most precise gps of an address like '1161 Mission St, San Francisco, CA 94103'.
-
-Use Geocoding API
-
-```https://maps.googleapis.com/maps/api/geocode/json?address=1161%20Mission%20St,%20San%20Francisco,%20CA%2094103&key=AIzaSyAIU_2CxK-fAGA7WLz6AR_6IDBfshuDzvE```
-
-And then it will return GPS [37.7779056, -122.4120423]. If I use this GPS in reversing api, it returns '1161 Mission St, San Francisco, CA 94103' in the first element of the result array, so [37.7779056, -122.4120423] should be the most precise GPS of the sample address.
-
-***My solution***
-
-Return all possible addresses in the response:
-```
-{
-    “addresses": [{
-        "address": {
-            Possible address
-        }}, {
-        "address": {
-            Possible address
-        }}, 
-        ......
-    ],
-    "nearest_gas_station”: {
-        Address of the nearest gas station
-    }
-}
-```
-
-
-**2. nearest gas station returned may not be a gas station**
-
-In my [second test case](/test/controllers/nearest_gas_controller_test.rb#L15), '469 7th Ave, New York, NY 10018, gps: [40.75194, -73.9894451]', it fails.
-
-If we use google map API to query gas station nearby with sort by distance, the nearest one will be '1 Pennsylvania Plaza # 1612, New York', but actually it's only a fuel company.
-
-However, if I search the gas station nearby in the google map website, it will return '466 10th Ave, New York, NY 10018', and this is a real gas station.
-
-***Why?***
-
-If we take a look at the response from google map API, we can see that the type of '1 Pennsylvania Plaza # 1612, New York' is indeed 'gas_station'. The fuel company is somehow classified as 'gas_station'.
-
-***My suggestion or TODO***
-
-There's a field called 'name' in google map API, and we can check if its 'name' is one of the gas station brands in USA, such as 'BP', 'Mobil'.
-
-
+## To be improved
