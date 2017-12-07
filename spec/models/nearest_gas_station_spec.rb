@@ -2,20 +2,12 @@ require 'rails_helper'
 require 'database_cleaner'
 require 'factories/google_map_api_fake_response'
 require 'helpers/stub_request_helper'
+require 'helpers/location_helper'
 include GoogleMapApiFakeResponse
 include StubRequestHelper
+include LocationHelper
 
 RSpec.describe NearestGasStation, type: :model do
-
-  def get_fake_location
-    fake_response = fake_a_response
-    fake_gps = fake_response[:fake_gps]
-    {
-      address: fake_response[:address][:parsed_address],
-      nearest_gas_station: fake_response[:nearest_gas_station][:parsed_address],
-      gps: [fake_gps[:lng], fake_gps[:lat]]
-    }
-  end
 
   before(:all) do
     Location.create_indexes
@@ -62,9 +54,9 @@ RSpec.describe NearestGasStation, type: :model do
   it 'Caching: cached address data is stale' do
     # if data is not stale, the same gps query will return cached data
     # else create a new data
-    fake_location = get_fake_location
+    fake_location = fake_a_location_document
     # stale day is 3 days, can be changed in nearest_gas_station.rb
-    fake_location[:query_time] = 259201.seconds.ago # 259200 seconds is 3 days
+    fake_location[:query_time] = 259202.seconds.ago # 259200 seconds is 3 days
     fake_gps = fake_location[:gps]
     location = Location.new(fake_location)
     location.save!

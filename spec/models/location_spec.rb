@@ -1,19 +1,11 @@
 require 'rails_helper'
 require 'database_cleaner'
 require 'factories/google_map_api_fake_response'
+require 'helpers/location_helper'
 include GoogleMapApiFakeResponse
+include LocationHelper
 
 RSpec.describe Location, type: :model do
-
-  def get_fake_location
-    fake_response = fake_a_response
-    fake_gps = fake_response[:fake_gps]
-    {
-      address: fake_response[:address][:parsed_address],
-      nearest_gas_station: fake_response[:nearest_gas_station][:parsed_address],
-      gps: [fake_gps[:lng], fake_gps[:lat]]
-    }
-  end
 
   before(:all) do
     Location.create_indexes
@@ -22,7 +14,7 @@ RSpec.describe Location, type: :model do
 
   before(:each) do
     DatabaseCleaner.clean
-    @fake_location = get_fake_location
+    @fake_location = fake_a_location_document
   end
 
   it 'gps validation' do
@@ -69,7 +61,7 @@ RSpec.describe Location, type: :model do
 
   it 'normal data insertion' do
     10.times do
-      fake_location = get_fake_location
+      fake_location = fake_a_location_document
       location = Location.new(fake_location)
       location.save!
       expect(Location.where(gps: fake_location[:gps]).count).to eq(1)
