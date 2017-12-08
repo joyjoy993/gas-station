@@ -15,49 +15,54 @@ RSpec.describe NearestGasController, type: :controller do
   before(:each) do
     DatabaseCleaner.clean
   end
-
-  it 'Invalid lat and lng pairs' do
-    invalid_gps = [
-      [-122.41204993, 37.77790], # longitude is over 6 decimal digits
-      [-122.412049, 37.73779088], # latitude is over 6 decimal digits
-      [-122.41204993, 100], # latitude is over 90 degree
-      [-181, 37.77790], # longitude is less than -180 degree
-      [181, 37.77790], # longitude is over 180 degree
-      [-122.41204993, -91], # latitude is less than -90 degree
-      ['string', -91], # invalid longitude
-      [-111, 'string'], # invalid latitude
-      ['string', 'string'], # both invalid
-      [nil, -91], # longitude is blank
-      [-122, nil] # latitude is blank
-    ]
-    for gps in invalid_gps
-      params = {
-        lat: gps[1],
-        lng: gps[0]
-      }
-      get :show, params: params
-      expect(response).to have_http_status(422)
-    end
-  end
-
+  
   it 'Invalid params' do
     invalid_params = [
-      {
+      { # extra params
         lat: -111,
         lng: -91,
         test: 'hi'
-      }, #extra params
-      {
+      }, { # missing longitude 
         lat: -111
-      }, # missing longitude
-      {
+      }, { # missing latitude
         lng: -91
-      }, # missing latitude
-      {
-      }, # missing all
-      {
+      }, { # missing all 
+      }, { # invalid params 
         test: '??'
-      } # invalid params
+      }, { # longitude is over 6 decimal digits
+        lng: -122.41204993,
+        lat: 37.77790
+      }, { # latitude is over 6 decimal digits
+        lng: -122.412049,
+        lat: 37.73779088 
+      }, { # latitude is over 90 degree
+        lng: -122.41204993,
+        lat: 100 
+      }, { # longitude is less than -180 degree
+        lng: -181,
+        lat: 37.77790 
+      }, { # longitude is over 180 degree
+        lng: 181,
+        lat: 37.77790 
+      }, { # latitude is less than -90 degree
+        lng: -122.41204993,
+        lat: -91 
+      }, { # invalid longitude
+        lng: 'string',
+        lat: -91 
+      }, { # invalid latitude
+        lng: -111,
+        lat: 'string' 
+      }, { # both invalid
+        lng: 'string',
+        lat: 'string' 
+      }, {  # longitude is blank
+        lng: nil,
+        lat: -91
+      }, { # latitude is blank
+        lng: -122,
+        lat: nil 
+      },
     ]
     for params in invalid_params
       get :show, params: params
