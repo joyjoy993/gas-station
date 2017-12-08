@@ -39,11 +39,9 @@ RSpec.describe Location, type: :model do
     end
   end
 
-  it 'gps & time uniqueness' do
+  it 'gps uniqueness' do
     gps = [-122.412049, 37.77790]
-    query_time = DateTime.now
     @fake_location[:gps] = gps
-    @fake_location[:query_time] = query_time
     location = Location.new(@fake_location)
     location.save!
     location = Location.new(@fake_location)
@@ -95,15 +93,17 @@ RSpec.describe Location, type: :model do
 
   it 'Caching: cached address data is stale' do
     # if data is not stale, the same gps query will return cached data
-    # else create a new data
+    # else remove old data and create a new data
     # stale day is 3 days, can be changed in nearest_gas_station.rb
     @fake_location[:query_time] = 259202.seconds.ago # 259200 seconds is 3 days
     fake_gps = @fake_location[:gps]
     location = Location.new(@fake_location)
     location.save!
+    document_id = Location.where(gps: fake_gps).first[:_id]
     nearest_gas_station = Location.new
     nearest_gas_station.get_result(fake_gps[1], fake_gps[0])
-    expect(Location.where(gps: fake_gps).count).to eq(2)
+    expect(Location.where(gps: fake_gps).count).to eq(1)
+    expect(Location.where(gps: fake_gps).first[:_id]).not_to eq(document_id)
   end
 
 end

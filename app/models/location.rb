@@ -59,6 +59,7 @@ class Location
 
   def create_location(address, nearest_gas_station)
     unless @is_gps_cached
+      Location.delete_all({gps: @gps}) # remove stale record first
       location = Location.new(
         gps: @gps,
         address: address,
