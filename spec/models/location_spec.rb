@@ -10,6 +10,7 @@ include LocationHelper
 RSpec.describe Location, type: :model do
 
   before(:all) do
+    Location.remove_indexes
     Location.create_indexes
     DatabaseCleaner.strategy = :truncation
   end

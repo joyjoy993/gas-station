@@ -8,6 +8,7 @@ include StubRequestHelper
 RSpec.describe NearestGasController, type: :controller do
 
   before(:all) do
+    Location.remove_indexes
     Location.create_indexes
     DatabaseCleaner.strategy = :truncation
   end
