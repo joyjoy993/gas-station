@@ -16,7 +16,7 @@ class NearestGasController < ApplicationController
     @lng = permitted[:lng]
     gps_validator = NearestGasValidators::GpsValidator.new(@lat, @lng)
     unless gps_validator.valid_params?
-      raise NearestGasErrors::CustomError.new(422, 'Invalid paramters', 'Invalid paramters')
+      raise NearestGasErrors::InvalidParametersError.new
     end
   end
   
