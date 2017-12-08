@@ -17,7 +17,7 @@ RSpec.describe GoogleApi do
 
   it 'Google server is down' do
     stub_error_request(:all)
-    expect{ @google_map_api_instance.reverse_gps(@gps[0], @gps[1]) }.to raise_error(NearestGasErrors::CustomError)
+    expect{ @google_map_api_instance.reverse_gps(@gps[0], @gps[1]) }.to raise_error(NearestGasErrors::HttpError)
   end
 
   it 'Google returns result with status that is not OK' do
