@@ -1,8 +1,6 @@
 module NearestGasErrors
   class GoogleMapApiError < CustomError
     GOOGLE_MAP_API_ERROR_STATUS_MAPPING = {
-      ZERO_RESULTS: 'The geocode was successful but returned no results.
-                This may occur if the geocoder was passed a non-existent address.',
       OVER_QUERY_LIMIT: 'Over query quota.',
       REQUEST_DENIED: 'Request was denied.',
       INVALID_REQUEST: 'The query (address, components or latlng) is missing.',

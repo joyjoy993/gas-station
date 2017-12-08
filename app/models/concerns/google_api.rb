@@ -95,10 +95,10 @@ module GoogleApi
       response = format_url_and_return_json_response(base_url, *params)
       data = response[:data]
       url = response[:url]
-      unless data['status'] == 'OK'
+      unless ['OK', 'ZERO_RESULTS'].include?(data['status'])
         raise NearestGasErrors::GoogleMapApiError.new(data['status'], url)
       end
-      data
+      data['results']
     end
 
     def format_url_and_return_json_response(base_url, *params)

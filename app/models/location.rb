@@ -7,7 +7,7 @@ class Location
   field :nearest_gas_station, type: Hash
   field :query_time, type: DateTime, default: DateTime.now
 
-  validates :gps, :query_time, :address, :nearest_gas_station, presence: true
+  validates :gps, :query_time, presence: true
   validate :gps_valid?
 
   # index gps and query_time with 'unique' option
@@ -74,15 +74,17 @@ class Location
       return address
     end
     addresses = []
-    response_of_reversing_gps = @google_map_api_instance.reverse_gps(@lat, @lng)
-    response_of_reversing_gps['results'].each { |result|
-      address = @google_map_api_instance.parse_address_result(result)
-      # When an address doesn't have streetAddress, it's a general address like a state, a place or a area marker
-      next if address[:streetAddress].nil?
-      addresses.push({
-        address: address
-      })
-    }
+    results_of_reversing_gps = @google_map_api_instance.reverse_gps(@lat, @lng)
+    if results_of_reversing_gps
+      results_of_reversing_gps.each { |result|
+        address = @google_map_api_instance.parse_address_result(result)
+        # When an address doesn't have streetAddress, it's a general address like a state, a place or a area marker
+        next if address[:streetAddress].nil?
+        addresses.push({
+          address: address
+        })
+      }
+    end
     address = addresses.empty? ? nil : addresses.first[:address]
     return {
       address: address
@@ -153,10 +155,13 @@ class Location
     if gas_station_address
       return gas_station_address
     end
-    response_of_nearby_gas_station = @google_map_api_instance.nearby(@lat, @lng, 'gas_station', 'distance')
-    gas_station_address = response_of_nearby_gas_station['results'].first['vicinity']
-    response_of_geocoding = @google_map_api_instance.geocoding(gas_station_address)
-    return @google_map_api_instance.parse_address_result(response_of_geocoding['results'].first)
+    results_of_nearby_gas_station = @google_map_api_instance.nearby(@lat, @lng, 'gas_station', 'distance')
+    if results_of_nearby_gas_station.empty?
+      return nil
+    end
+    gas_station_address = results_of_nearby_gas_station.first['vicinity']
+    results_of_geocoding = @google_map_api_instance.geocoding(gas_station_address)
+    return @google_map_api_instance.parse_address_result(results_of_geocoding.first)
   end
 
 end
