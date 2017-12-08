@@ -15,7 +15,7 @@ RSpec.describe NearestGasController, type: :controller do
   before(:each) do
     DatabaseCleaner.clean
   end
-  
+
   it 'Invalid params' do
     invalid_params = [
       { # extra params
@@ -29,12 +29,6 @@ RSpec.describe NearestGasController, type: :controller do
       }, { # missing all 
       }, { # invalid params 
         test: '??'
-      }, { # longitude is over 6 decimal digits
-        lng: -122.41204993,
-        lat: 37.77790
-      }, { # latitude is over 6 decimal digits
-        lng: -122.412049,
-        lat: 37.73779088 
       }, { # latitude is over 90 degree
         lng: -122.41204993,
         lat: 100 
@@ -62,7 +56,7 @@ RSpec.describe NearestGasController, type: :controller do
       }, { # latitude is blank
         lng: -122,
         lat: nil 
-      },
+      }
     ]
     for params in invalid_params
       get :show, params: params

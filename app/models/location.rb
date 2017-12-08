@@ -42,8 +42,8 @@ class Location
   def gps_valid?
     lat = gps[1]
     lng = gps[0]
-    location = NearestGasValidators::GpsValidator.new(lat, lng)
-    unless location.valid?
+    gps_validator = NearestGasValidators::GpsValidator.new(lat, lng)
+    unless gps_validator.valid_to_store?
       errors.add(:gps, 'Invalid gps pair')
     end
   end
@@ -51,8 +51,8 @@ class Location
   def initialize_variables(lat, lng)
     google_api_key = Rails.application.secrets.google_api_key
     @google_map_api_instance = GoogleApi::GoogleMapApi.new(google_api_key)
-    @lat = lat.to_f
-    @lng = lng.to_f
+    @lat = lat.to_f.round(6) # round it to 6 decimal digits
+    @lng = lng.to_f.round(6) # round it to 6 decimal digits
     @gps = [@lng, @lat]
     @is_gps_cached = false
   end
