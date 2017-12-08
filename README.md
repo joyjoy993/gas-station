@@ -64,28 +64,45 @@ Run all testes by ```rspec spec/```
 
 ### Controller testing cases
 #### NearestGasController
-1. invalid lat and lng as parameters, should return error ```422```.
-2. invalid parameters(missing lat or lng, extrat params), should return error ```422```.
-3. when google service is unavailable, and we can not fetch data from it, should return error ```500```.
+1. invalid parameters, should return error ```422```.
+2. when google service is unavailable, and we can not fetch data from it, should return error ```500```.
+3. should return  
+    ```
+    {
+      address: null,
+      nearest_gas_station: null
+    }
+    ```
+    when ```ZERO_RESULTS``` returned from google api.
 4. normal request should return expected result.
 
 ### Model testing cases
 #### Location
+##### Part 1: field validations
 1. validate ```lat``` and ```lng```, if it doesn't pass validation, should include ```Invalid gps pair``` in errors.
 2. two pairs of location documents with the same ```gps``` and ```query_time``` can not be saved into database.
-3. ```address``` field can not be blank.
-4. ```nearest_gas_station``` field can not be blank.
+3. normal data should be inserted correctly.
+##### Part 2: bussiness logic
+1. result from normal query should be inserted correctly.
+2. if query the same gps more than once within stale time, should return cached data and won't create new document in database.
+3. if query nearby gps and cached gas_station_address is found, should use the cached gas_station_address and should not hit the google nearby api.
+4. if the cached data is stale, should fetch new data from google api, delete stale data and save new data into database.
 
-##### GoogleMapApi
+### Concern testing cases
+#### GoogleMapApi
 1. should raise ```NearestGasErrors::CustomError``` when google service is unavailable.
 2. should raise ```NearestGasErrors::GoogleMapApiError``` when google api returns response without ```OK``` status.
 3. should correctly parse address components from google api.
 
-#### NearestGasStation
-1. normal query should all be saved into database.
-2. if query the same gps more than once within stale time, should return cached data and won't create new document in database.
-3. if query nearby gps and cached gas_station_address is found, should use the cached gas_station_address and should not hit the google nearby api.
-4. if the cached data is stale, should fetch new data from google api and save them into database.
+## Other notes
+#### Gps validators
+There are two types of [gps validators](/lib/nearest_gas_validators/).  
+1. For url validation: this one checks if lat and lng are valid, but ignore decimal digits(lat and lng will be rounded after being passed in).
+2. For field validation: this one checks lat and lng before inserting data into database, and it asks the lat and lng should be less than or equal to six decimal digits.
+#### Logging in error handler
+[Error handler](/lib/nearest_gas_errors/error_handler.rb) can log error.
+#### Module GoogleApi
+Module [GoogleApi](app/models/concerns/google_api.rb) is reuseable for every model, and we can add more api operations for it in the future.
 
 ## Improvement progress
 - [x] Thin controller, fat model
@@ -102,4 +119,7 @@ Run all testes by ```rspec spec/```
     1. Try to cover as many cases as I can, please check [spec](/spec/) folder
 - [ ] Documentation
 
-## To be improved
+## Can be improved in the future
+1. Might have some cases that are not covered in testing.
+2. Should create another model to log all the requests, and also make another collection for logging.
+
