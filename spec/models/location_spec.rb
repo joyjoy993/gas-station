@@ -50,20 +50,6 @@ RSpec.describe Location, type: :model do
     expect{ location.save! }.to raise_error(Mongo::Error::OperationFailure, /duplicate key error collection/)
   end
 
-  it 'empty address' do
-    @fake_location.delete(:address)
-    location = Location.new(@fake_location)
-    location.valid?
-    expect( location.errors[:address] ).to include("can't be blank")
-  end
-
-  it 'empty nearest_gas_station' do
-    @fake_location.delete(:nearest_gas_station)
-    location = Location.new(@fake_location)
-    location.valid?
-    expect( location.errors[:nearest_gas_station] ).to include("can't be blank")
-  end
-
   it 'normal data insertion' do
     10.times do
       fake_location = fake_a_location_document
