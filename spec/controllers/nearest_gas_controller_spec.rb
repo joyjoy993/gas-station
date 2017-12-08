@@ -72,6 +72,17 @@ RSpec.describe NearestGasController, type: :controller do
     expect(response).to have_http_status(500)
   end
 
+  it 'Query some gps that Google will return result without \'OK\' status' do
+    error_status = ['ZERO_RESULTS', 'OVER_QUERY_LIMIT', 'REQUEST_DENIED', 'INVALID_REQUEST', 'UNKNOWN_ERROR']
+    fake_gps = fake_gps_pair
+    for status in error_status
+      stub_request(:any, /https:\/\/maps.googleapis.com\/*/)
+        .to_return(status: 200,  body: { status: status }.to_json)
+      get :show, params: fake_gps
+      expect(response).to have_http_status(503)
+    end
+  end
+
   it 'Normal requestes' do
     fake_responses = fake_some_responses(10)
     for fake_response in fake_responses
