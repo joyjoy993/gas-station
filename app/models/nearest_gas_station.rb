@@ -1,12 +1,12 @@
 class NearestGasStation
-  include ModelConcern
+  include GoogleApi
 
   CACHING_PRECISION = 0.005 / 111.12 # 5 meters
   STALE_TIME = 3.days.ago # expire time
 
   def initialize(lat, lng)
     google_api_key = Rails.application.secrets.google_api_key
-    @google_map_api_instance = GoogleMapApi.new(google_api_key)
+    @google_map_api_instance = GoogleApi::GoogleMapApi.new(google_api_key)
     @lat = lat.to_f
     @lng = lng.to_f
     @gps = [@lng, @lat]
