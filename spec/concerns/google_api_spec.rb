@@ -3,12 +3,13 @@ require 'factories/google_map_api_fake_response'
 require 'helpers/stub_request_helper'
 include GoogleMapApiFakeResponse
 include StubRequestHelper
+include GoogleApi
 
-RSpec.describe GoogleMapApi, type: :model do
+RSpec.describe GoogleApi do
 
   before(:all) do
     google_api_key = Rails.application.secrets.google_api_key
-    @google_map_api_instance = GoogleMapApi.new(google_api_key)
+    @google_map_api_instance = GoogleApi::GoogleMapApi.new(google_api_key)
     fake_response = fake_a_response
     fake_gps = fake_response[:fake_gps]
     @gps = [fake_gps[:lng], fake_gps[:lat]]
