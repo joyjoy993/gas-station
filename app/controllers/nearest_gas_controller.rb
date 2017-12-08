@@ -3,8 +3,8 @@ class NearestGasController < ApplicationController
   before_action :validate_params
 
   def show
-    nearest_gas_station = NearestGasStation.new(@lat, @lng)
-    nearest_gas_station_result = nearest_gas_station.get_result()
+    location = Location.new
+    nearest_gas_station_result = location.get_result(@lat, @lng)
     render_json(nearest_gas_station_result, 200)
   end
 
