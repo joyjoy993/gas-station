@@ -84,19 +84,16 @@ class Location
       # if address is not nil, it means that there's a cached address
       return address
     end
-    addresses = []
     results_of_reversing_gps = @google_map_api_instance.geocoding_by_gps(@lat, @lng)
     if results_of_reversing_gps
       results_of_reversing_gps.each { |result|
-        address = @google_map_api_instance.parse_address_result(result)
+        parsed_address = @google_map_api_instance.parse_address_result(result)
         # When an address doesn't have streetAddress, it's a general address like a state, a place or a area marker
-        next if address[:streetAddress].nil?
-        addresses.push({
-          address: address
-        })
+        next if parsed_address[:streetAddress].nil?
+        address = parsed_address
+        break
       }
     end
-    address = addresses.empty? ? nil : addresses.first[:address]
     return {
       address: address
     }
