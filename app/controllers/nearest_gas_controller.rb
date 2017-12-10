@@ -15,6 +15,8 @@ class NearestGasController < ApplicationController
     @lat = permitted[:lat]
     @lng = permitted[:lng]
     gps_validator = NearestGasValidators::GpsValidator.new(@lat, @lng)
+    # validate latitude and longitude in url,
+    # but without 6 decimal digits limitation
     unless gps_validator.valid_params?
       raise NearestGasErrors::InvalidParametersError.new
     end

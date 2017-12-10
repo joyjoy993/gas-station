@@ -12,10 +12,14 @@ class Location
 
   # index gps and query_time with 'unique' option
   # pros:
-  # 1. can ensure cached query is uniqueness
-  # 2. can log query(won't delete stale query)
+  # can ensure cached query is uniqueness
+  # cons:
+  # can not log query(will delete stale record)
   index({gps: '2d', query_time: 1}, {min: -180, max: 180, unique: true})
 
+  # Mongodb nearby function uses degree as 'max_distance'
+  # One degree is approximately 111.12 kilometers
+  # For example, 5 meters is equal to 0.005/111.12 degree
   CACHING_PRECISION = 0.005 / 111.12 # 5 meters
   STALE_TIME = 3.days.ago # expire time
 
@@ -43,6 +47,7 @@ class Location
     lat = gps[1]
     lng = gps[0]
     gps_validator = NearestGasValidators::GpsValidator.new(lat, lng)
+    # validate latitude and longitude with 6 decimal digits limitation
     unless gps_validator.valid_to_store?
       errors.add(:gps, 'Invalid gps pair')
     end
@@ -51,6 +56,10 @@ class Location
   def initialize_variables(lat, lng)
     google_api_key = Rails.application.secrets.google_api_key
     @google_map_api_instance = GoogleApi::GoogleMapApi.new(google_api_key)
+    # latitude and longitude that are over 6 decimal digits will be 
+    # rounded to 6 decimal digits in google map api, so I think that 
+    # we should be better to round them to 6 decimal ditgits too, because 
+    # it will keep ours records the same as google's.
     @lat = lat.to_f.round(6) # round it to 6 decimal digits
     @lng = lng.to_f.round(6) # round it to 6 decimal digits
     @gps = [@lng, @lat]
@@ -59,7 +68,7 @@ class Location
 
   def create_location(address, nearest_gas_station)
     unless @is_gps_cached
-      Location.delete_all({gps: @gps}) # remove stale record first
+      Location.delete_all({gps: @gps})# remove stale record first
       location = Location.new(
         gps: @gps,
         address: address,
@@ -72,6 +81,7 @@ class Location
   def fetch_address()
     address = fetch_cache_address()
     if address
+      # if address is not nil, it means that there's a cached address
       return address
     end
     addresses = []
@@ -124,6 +134,7 @@ class Location
       @is_gps_cached = true
       return caching_result.first
     else
+      # no cache
       @is_gps_cached = false
       return nil
     end
@@ -147,6 +158,7 @@ class Location
     unless caching_result.empty?
       return caching_result.first[:nearest_gas_station]
     else
+      # no cache
       return nil
     end
   end
@@ -160,6 +172,9 @@ class Location
     if results_of_nearby_gas_station.empty?
       return nil
     end
+    # vicinity contains a feature name of a nearby location.
+    # Often this feature refers to a street or neighborhood within the given results. 
+    # The vicinity property is only returned for a Nearby Search.
     gas_station_address = results_of_nearby_gas_station.first['vicinity']
     results_of_geocoding = @google_map_api_instance.geocoding_by_address(gas_station_address)
     return @google_map_api_instance.parse_address_result(results_of_geocoding.first)

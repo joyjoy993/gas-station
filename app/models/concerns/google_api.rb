@@ -6,8 +6,8 @@ module GoogleApi
 
   class GoogleMapApi
 
-    GEOCODING_BY_GPS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s'
     NEARBY_QUERY_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=%s,%s&type=%s&rankby=%s&key=%s'
+    GEOCODING_BY_GPS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s'
     GEOCODING_BY_ADDRESS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s'
     GOOGLE_ADDRESS_COMPONENT_MAPPING_KEYS = {
       street_number: {
@@ -95,6 +95,8 @@ module GoogleApi
       response = format_url_and_return_json_response(base_url, *params)
       data = response[:data]
       url = response[:url]
+      # only 'OK' and 'ZERO_RESULTS' results should be returned
+      # otherwise, it should be an error from google api
       unless ['OK', 'ZERO_RESULTS'].include?(data['status'])
         raise NearestGasErrors::GoogleMapApiError.new(data['status'], url)
       end
