@@ -117,9 +117,8 @@ Module [GoogleApi](app/models/concerns/google_api.rb) is reuseable for every mod
     2. validate fields before saving data to database
 - [x] Testing
     1. Try to cover as many cases as I can, please check [spec](/spec/) folder
-- [ ] Documentation
+- [x] Documentation
 
 ## Can be improved in the future
 1. Might have some cases that are not covered in testing.
 2. Should create another model to log all the requests, and also make another collection for logging.
-
