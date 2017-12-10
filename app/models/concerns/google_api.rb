@@ -6,9 +6,9 @@ module GoogleApi
 
   class GoogleMapApi
 
-    REVERSE_GPS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s'
+    GEOCODING_BY_GPS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s'
     NEARBY_QUERY_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=%s,%s&type=%s&rankby=%s&key=%s'
-    GEOCODING_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s'
+    GEOCODING_BY_ADDRESS_QUERY_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s'
     GOOGLE_ADDRESS_COMPONENT_MAPPING_KEYS = {
       street_number: {
         original_key: 'long_name',
@@ -40,12 +40,12 @@ module GoogleApi
       @api_key = api_key
     end
 
-    def reverse_gps(lat, lng)
-      fetch_data_from_google(REVERSE_GPS_QUERY_URL, lat, lng, @api_key)
+    def geocoding_by_gps(lat, lng)
+      fetch_data_from_google(GEOCODING_BY_GPS_QUERY_URL, lat, lng, @api_key)
     end
 
-    def geocoding(address)
-      fetch_data_from_google(GEOCODING_QUERY_URL, address, @api_key)
+    def geocoding_by_address(address)
+      fetch_data_from_google(GEOCODING_BY_ADDRESS_QUERY_URL, address, @api_key)
     end
 
     def nearby(lat, lng, type, rank_by=distance)

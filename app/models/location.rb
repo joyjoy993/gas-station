@@ -75,7 +75,7 @@ class Location
       return address
     end
     addresses = []
-    results_of_reversing_gps = @google_map_api_instance.reverse_gps(@lat, @lng)
+    results_of_reversing_gps = @google_map_api_instance.geocoding_by_gps(@lat, @lng)
     if results_of_reversing_gps
       results_of_reversing_gps.each { |result|
         address = @google_map_api_instance.parse_address_result(result)
@@ -161,7 +161,7 @@ class Location
       return nil
     end
     gas_station_address = results_of_nearby_gas_station.first['vicinity']
-    results_of_geocoding = @google_map_api_instance.geocoding(gas_station_address)
+    results_of_geocoding = @google_map_api_instance.geocoding_by_address(gas_station_address)
     return @google_map_api_instance.parse_address_result(results_of_geocoding.first)
   end
 
